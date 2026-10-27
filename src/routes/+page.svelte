@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { AGE_OPTIONS } from '$lib/filters';
+	import { AGE_OPTIONS, isFiltered, MATCH_OPTIONS, MODALITY_OPTIONS } from '$lib/filters';
 	import PlatformBadge from '$lib/PlatformBadge.svelte';
 	import { platform } from '$lib/platforms';
 	import type { SearchProgress } from '$lib/progress';
@@ -16,7 +16,7 @@
 
 	const platformCount = $derived(new Set(data.postings.map((p) => p.platform)).size);
 	const total = $derived(data.platforms.reduce((n, p) => n + p.total, 0));
-	const filtered = $derived(data.filters.platform !== null || data.filters.maxAgeDays !== null);
+	const filtered = $derived(isFiltered(data.filters));
 	const overall = $derived.by(() => {
 		const total = progress.platforms.reduce((n, p) => n + p.total, 0);
 		const done = progress.platforms.reduce(
@@ -142,6 +142,32 @@
 			{/each}
 		</select>
 	</label>
+	<label>
+		Modalidad
+		<select name="modalidad" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+			<option value="">Todas</option>
+			{#each MODALITY_OPTIONS as o (o.value)}
+				<option value={o.value} selected={data.filters.modality === o.value}>{o.label}</option>
+			{/each}
+		</select>
+	</label>
+	<label>
+		Encaje
+		<select name="encaje" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+			<option value="">Todos</option>
+			{#each MATCH_OPTIONS as o (o.value)}
+				<option value={o.value} selected={data.filters.minMatch === o.value}>{o.label}</option>
+			{/each}
+		</select>
+	</label>
+	<input
+		type="search"
+		name="q"
+		value={data.filters.text ?? ''}
+		placeholder="Buscar en la lista…"
+		aria-label="Buscar en título, empresa o descripción"
+		autocomplete="off"
+	/>
 	{#if filtered}<a href="/" class="clear">Quitar filtros</a>{/if}
 </form>
 
@@ -347,7 +373,8 @@
 		align-items: center;
 		gap: 6px;
 	}
-	.filters select {
+	.filters select,
+	.filters input {
 		font: inherit;
 		border: 1px solid var(--border);
 		border-radius: 6px;
