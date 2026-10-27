@@ -24,12 +24,11 @@ describe('parseFilters', () => {
 		expect(parseFilters(new URLSearchParams('dias=')).maxAgeDays).toBeNull();
 	});
 
-	test('lee modalidad, encaje y texto', () => {
-		expect(parseFilters(new URLSearchParams('modalidad=hibrido&encaje=naranja&q=nestjs'))).toEqual({
+	test('lee modalidad y encaje', () => {
+		expect(parseFilters(new URLSearchParams('modalidad=hibrido&encaje=naranja'))).toEqual({
 			...NO_FILTERS,
 			modality: 'hibrido',
-			minMatch: 'naranja',
-			text: 'nestjs'
+			minMatch: 'naranja'
 		});
 	});
 
@@ -37,12 +36,6 @@ describe('parseFilters', () => {
 		const filters = parseFilters(new URLSearchParams('modalidad=marte&encaje=rojo'));
 		expect(filters.modality).toBeNull();
 		expect(filters.minMatch).toBeNull();
-	});
-
-	test('un texto vacío o de solo espacios no filtra', () => {
-		expect(parseFilters(new URLSearchParams('q=')).text).toBeNull();
-		expect(parseFilters(new URLSearchParams('q=%20%20')).text).toBeNull();
-		expect(parseFilters(new URLSearchParams('q=%20go%20')).text).toBe('go');
 	});
 });
 
@@ -52,7 +45,7 @@ describe('isFiltered', () => {
 	});
 
 	test('cualquier filtro lo activa', () => {
-		expect(isFiltered({ ...NO_FILTERS, text: 'go' })).toBe(true);
+		expect(isFiltered({ ...NO_FILTERS, modality: 'remoto' })).toBe(true);
 		expect(isFiltered({ ...NO_FILTERS, maxAgeDays: 0 })).toBe(true);
 	});
 });

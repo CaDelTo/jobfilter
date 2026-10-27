@@ -160,14 +160,6 @@
 			{/each}
 		</select>
 	</label>
-	<input
-		type="search"
-		name="q"
-		value={data.filters.text ?? ''}
-		placeholder="Buscar en la lista…"
-		aria-label="Buscar en título, empresa o descripción"
-		autocomplete="off"
-	/>
 	{#if filtered}<a href="/" class="clear">Quitar filtros</a>{/if}
 </form>
 
@@ -373,8 +365,7 @@
 		align-items: center;
 		gap: 6px;
 	}
-	.filters select,
-	.filters input {
+	.filters select {
 		font: inherit;
 		border: 1px solid var(--border);
 		border-radius: 6px;

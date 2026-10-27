@@ -3,7 +3,6 @@ import { db } from '$lib/server/db/client';
 import { companies, postings } from '$lib/server/db/schema';
 import { isWithinDays, meetsMatch, NO_FILTERS, type ListFilters } from '$lib/filters';
 import { matchPosting, type Match } from '$lib/server/features/match/queries/match-posting';
-import { normalizeText } from '$lib/server/shared/normalize';
 
 export type NewPosting = {
 	id: number;
@@ -49,7 +48,7 @@ export function listNewPostings(filters: ListFilters = NO_FILTERS): NewPosting[]
 		.where(and(eq(postings.status, 'nueva'), sql`${companies.list} IS NOT 'negra'`))
 		.orderBy(desc(postings.publishedAt))
 		.all()
-		.map((p) => ({ ...p, match: matchPosting(p.title, p.description) }))
+		.map(({ description, ...p }) => ({ ...p, match: matchPosting(p.title, description) }))
 		// primero las más compatibles (el % que se ve en pantalla), y a igual % la más nueva,
 		// sin importar la plataforma; las que no mencionan tecnologías van al final
 		.sort((a, b) => percent(b.match) - percent(a.match));
@@ -64,15 +63,12 @@ export function listNewPostings(filters: ListFilters = NO_FILTERS): NewPosting[]
 		best.set(companyId, { bestId: worthIt ? top.id : -1, total: list.length });
 	}
 
-	// sin tildes ni mayúsculas, igual que el mapa de calor: "dueño" encuentra "Dueno"
-	const text = filters.text ? normalizeText(filters.text) : null;
 	return rows
 		.filter((p) => filters.platform === null || p.platform === filters.platform)
 		.filter((p) => filters.maxAgeDays === null || isWithinDays(p.publishedAt, filters.maxAgeDays))
 		.filter((p) => filters.modality === null || p.modality === filters.modality)
 		.filter((p) => filters.minMatch === null || meetsMatch(p.match.level, filters.minMatch))
-		.filter((p) => !text || normalizeText(`${p.title}\n${p.company ?? ''}\n${p.description ?? ''}`).includes(text))
-		.map(({ description, ...p }) => {
+		.map((p) => {
 			const b = p.companyId === null ? undefined : best.get(p.companyId);
 			return { ...p, sameCompany: b ? { total: b.total, isBest: b.bestId === p.id } : null };
 		});

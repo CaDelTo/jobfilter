@@ -28,11 +28,9 @@ export type ListFilters = {
 	maxAgeDays: number | null;
 	modality: Modality | null;
 	minMatch: MinMatch | null;
-	/** Texto libre: se busca en el título, la empresa y la descripción. */
-	text: string | null;
 };
 
-export const NO_FILTERS: ListFilters = { platform: null, maxAgeDays: null, modality: null, minMatch: null, text: null };
+export const NO_FILTERS: ListFilters = { platform: null, maxAgeDays: null, modality: null, minMatch: null };
 
 /** Lee los filtros de la URL; lo que no reconoce se ignora en vez de romper la página. */
 export function parseFilters(params: URLSearchParams): ListFilters {
@@ -43,8 +41,7 @@ export function parseFilters(params: URLSearchParams): ListFilters {
 		platform: params.get('plataforma') || null,
 		maxAgeDays: days ?? null,
 		modality: modality ?? null,
-		minMatch: minMatch ?? null,
-		text: params.get('q')?.trim() || null
+		minMatch: minMatch ?? null
 	};
 }
 
